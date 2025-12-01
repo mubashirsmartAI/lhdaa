@@ -21,3 +21,12 @@ package-lock.json
 !/storage/certs/cacert.pem
 .DS_Store
 /public/storage
+
+# Firebase/Google Cloud Service Account credentials
+/public/firebase/*.json
+/public/voltaic-*.json
+/public/*-*.json
+
+# SQL files with secrets (may contain API keys)
+/public/sql_files/
+royo_*.sql
