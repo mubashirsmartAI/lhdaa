@@ -38,7 +38,13 @@ class DashBoardController extends BaseController
         $this->from_date = Carbon::now()->startOfDay()->subDays(7);
         $this->to_date = Carbon::now()->endOfDay();
         $this->setWeekDate =  $this->from_date->format('d M Y') . ' to '. $this->to_date->format('d M Y');
-        $this->roleId = (@auth()->user()) ? getRoleId(@auth()->user()->getRoleNames()[0]) : null;
+        $user = auth()->user();
+        if ($user) {
+            $roleNames = $user->getRoleNames();
+            $this->roleId = ($roleNames->isNotEmpty()) ? getRoleId($roleNames[0]) : null;
+        } else {
+            $this->roleId = null;
+        }
     }
 
     public function index(Request $request)
@@ -609,13 +615,13 @@ class DashBoardController extends BaseController
                     $percent_from = $revenue_lastmonth - $revenue_currentmonth;
                     $revenue_decrease = $percent_from / $revenue_lastmonth * 100; //decrease percent
                 } else {
-                    $revenue_decrease = 'NULL';
+                    $revenue_decrease = null;
                 }
             }
-            if ($revenue_increase != '') {
+            if ($revenue_increase !== '' && $revenue_increase !== null && is_numeric($revenue_increase)) {
                 $revenue_increase = round($revenue_increase, 2);
             }
-            if ($revenue_decrease != '') {
+            if ($revenue_decrease !== '' && $revenue_decrease !== null && $revenue_decrease !== 'NULL' && is_numeric($revenue_decrease)) {
                 $revenue_decrease = round($revenue_decrease, 2);
             }
 

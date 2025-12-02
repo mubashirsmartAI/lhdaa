@@ -39,23 +39,35 @@ class CharityController extends Controller
 
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:150',
-            'desc' => 'nullable|string',
-            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'address' => 'required|string',
-            'email' => 'required|email|max:255|unique:charities,email',
-            'website' => 'nullable|url',
-            'phone' => 'required|string|max:20|unique:charities,phone',
-            'dial_code' => 'required|string|max:10',
-            'lat' => 'nullable|numeric',
-            'long' => 'nullable|numeric',
-            'password' => 'required|min:8|confirmed'
-        ]);
-        
-        DB::beginTransaction();
-
         try {
+            $validatedData = $request->validate([
+                'name' => 'required|string|max:150',
+                'desc' => 'nullable|string',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'address' => 'required|string',
+                'email' => 'required|email|max:255|unique:charities,email',
+                'website' => 'nullable|url',
+                'phone' => 'required|string|max:20|unique:charities,phone',
+                'dial_code' => 'required|string|max:10',
+                'lat' => 'nullable|numeric',
+                'long' => 'nullable|numeric',
+                'password' => 'required|min:8|confirmed'
+            ], [
+                'name.required' => 'Charity name is required.',
+                'address.required' => 'Address is required.',
+                'email.required' => 'Email is required.',
+                'email.email' => 'Please enter a valid email address.',
+                'email.unique' => 'This email is already registered.',
+                'phone.required' => 'Phone number is required.',
+                'phone.unique' => 'This phone number is already registered.',
+                'dial_code.required' => 'Dial code is required.',
+                'password.required' => 'Password is required.',
+                'password.min' => 'Password must be at least 8 characters.',
+                'password.confirmed' => 'Password confirmation does not match.',
+            ]);
+            
+            DB::beginTransaction();
+
             $charity = new Charity();
             $charity->name = $request->name;
             $charity->desc = $request->desc;
@@ -79,15 +91,20 @@ class CharityController extends Controller
             $user = new User();
             $user->name = $request->name;
             $user->email = $request->email;
-            // $user->password = bcrypt('123456');
-            $user->description = $request->description;
+            $user->description = $request->desc;
             $user->phone_number = $request->phone;
             $user->dial_code = $request->dial_code;
             $user->role_id = 4;
             $user->status = 1;
             $user->is_admin = 1;
             $user->password = Hash::make($request->password);
-            $user->charity_id =  $charity->id;
+            $user->charity_id = $charity->id;
+            
+            // Add client_code if user is authenticated
+            if (Auth::check() && Auth::user()->code) {
+                $user->code = Auth::user()->code;
+            }
+            
             $user->save();
 
             if ($user) {
@@ -97,10 +114,19 @@ class CharityController extends Controller
             DB::commit();
 
             return redirect()->route('charity.index')->with('success', 'Charity and user added successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            Log::error('Charity validation error: ' . json_encode($e->errors()));
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             DB::rollBack();
-
-            return redirect()->back()->with('error', 'Failed to add charity: ' . $e->getMessage());
+            Log::error('Charity store error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return redirect()->back()
+                ->with('error', 'Failed to add charity: ' . $e->getMessage())
+                ->withInput();
         }
     }
 

@@ -89,7 +89,7 @@ class BrandController extends BaseController
                             }else{
                                 $v->is_free = false;
                             }
-                            $v->multiplier = $clientCurrency->doller_compare;
+                            $v->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                         }
                     }
 
@@ -117,7 +117,7 @@ class BrandController extends BaseController
                     $product->variant_id = ($product->variant->isNotEmpty()) ? $product->variant->first()->id : 0;
                     $product->variant_quantity = ($product->variant->isNotEmpty()) ? $product->variant->first()->quantity : 0;
                     foreach ($product->variant as $k => $v) {
-                        $product->variant[$k]->multiplier = $clientCurrency->doller_compare;
+                        $product->variant[$k]->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                     }
                 }
             }
@@ -162,9 +162,9 @@ class BrandController extends BaseController
         $startRange = 0; $endRange = 20000;
         if($request->has('range') && !empty($request->range)){
             $range = explode(';', $request->range);
-            $clientCurrency->doller_compare;
-            $startRange = $range[0] * $clientCurrency->doller_compare;
-            $endRange = $range[1] * $clientCurrency->doller_compare;
+            $dollerCompare = $clientCurrency ? $clientCurrency->doller_compare : 1;
+            $startRange = $range[0] * $dollerCompare;
+            $endRange = $range[1] * $dollerCompare;
         }
 
         $multiArray = array();
@@ -242,7 +242,7 @@ class BrandController extends BaseController
             foreach ($products as $product) {
                 $product->is_wishlist = $product->category->categoryDetail->show_wishlist;
                 foreach ($product->variant as $k => $v) {
-                    $product->variant[$k]->multiplier = $clientCurrency->doller_compare;
+                    $product->variant[$k]->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                 }
             }
         }

@@ -1267,7 +1267,7 @@ class HomeController extends BaseController
 
         foreach ($products as $product) {
             $product->response_type = 'product';
-            $product->image_url = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+            $product->image_url = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
             foreach ($product->variant as $key => $value) {
                 $product->variant[$key]->multiplier = $clientCurrency->doller_compare;
                 $product->variant[$key]->price *= $product->variant[$key]->multiplier;

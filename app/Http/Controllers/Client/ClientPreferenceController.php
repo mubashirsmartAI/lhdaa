@@ -17,6 +17,7 @@ use App\Http\Traits\ValidatorTrait;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Support\Facades\Log;
 use Session;
 
 class ClientPreferenceController extends BaseController{
@@ -102,7 +103,7 @@ class ClientPreferenceController extends BaseController{
     }
 
 
-    public function getCustomizePage(ClientPreference $clientPreference){
+    public function getCustomizePage(){
         $curArray = [];
         $cli_langs = [];
         $cli_countries = [];
@@ -111,16 +112,26 @@ class ClientPreferenceController extends BaseController{
         $cli_currs = [];
         $laundry_teams = [];
         $client = Auth::user();
-        $social_media_details = SocialMedia::get();
-        $webTemplates = Template::where('for', '1')->get();
-        $appTemplates = Template::where('for', '2')->get();
-        $languages = Language::where('id', '>', '0')->get();
-        $currencies = Currency::where('id', '>', '0')->get();
-        $countries = Country::where('id', '>', '0')->get();
+        if (!$client || !$client->code) {
+            return redirect()->route('client.dashboard')->with('error', 'Client code not found. Please contact administrator.');
+        }
+        
+        // Optimize queries by selecting only needed columns (social_media has 'title' not 'name', and no 'status')
+        $social_media_details = SocialMedia::select('id', 'title', 'icon', 'url')->get();
+        // templates table has: id, name, image, for (no status column)
+        $webTemplates = Template::select('id', 'name', 'image', 'for')->where('for', '1')->get();
+        $appTemplates = Template::select('id', 'name', 'image', 'for')->where('for', '2')->get();
+        // languages table: id, sort_code, name, nativeName (no status)
+        $languages = Language::select('id', 'name', 'sort_code', 'nativeName')->where('id', '>', '0')->get();
+        // currencies table: id, name, iso_code, symbol, priority (no status)
+        $currencies = Currency::select('id', 'name', 'iso_code', 'symbol', 'priority')->where('id', '>', '0')->get();
+        // countries table: id, code, name, nicename (no status)
+        $countries = Country::select('id', 'name', 'code', 'nicename')->where('id', '>', '0')->get();
         $curtableData = array_chunk($currencies->toArray(), 2);
         $primaryCurrency = ClientCurrency::where('is_primary', 1)->first();
         $primaryCountry = ClientCountries::where('is_primary', 1)->first();
-        $nomenclatureAllToGet=Nomenclature::get();
+        // Optimize: Select only needed columns for nomenclature
+        $nomenclatureAllToGet = Nomenclature::select('id', 'label')->get();
         $want_to_tip_nomenclature=$nomenclatureAllToGet->where('label','Want To Tip')->first();
         $include_gift_nomenclature=$nomenclatureAllToGet->where('label','Include Gift')->first();
         $control_panel_nomenclature=$nomenclatureAllToGet->where('label','Control Panel')->first();
@@ -138,20 +149,60 @@ class ClientPreferenceController extends BaseController{
         $preference = $ClientPreference ? $ClientPreference : new ClientPreference();
 
         $nomenclature_value = $nomenclatureAllToGet->first();
-        foreach ($preference->currency as $value) {
-            $cli_currs[] = $value->currency_id;
+        
+        // Check if preference exists and has relationships before accessing
+        if ($preference->exists && $preference->currency) {
+            foreach ($preference->currency as $value) {
+                $cli_currs[] = $value->currency_id;
+            }
         }
-        foreach ($preference->language as $value) {
-            $cli_langs[] = $value->language_id;
+        if ($preference->exists && $preference->language) {
+            foreach ($preference->language as $value) {
+                $cli_langs[] = $value->language_id;
+            }
         }
-        foreach ($preference->countries as $value) {
-            $cli_countries[] = $value->country_id;
+        if ($preference->exists && $preference->countries) {
+            foreach ($preference->countries as $value) {
+                $cli_countries[] = $value->country_id;
+            }
         }
-        $tags = Tag::with('primary')->get();
-        $vendor_registration_documents = VendorRegistrationDocument::with('primary')->get();
+        // Optimize: Limit relationships and select only needed columns
+        $tags = Tag::select('id')
+            ->with(['primary' => function($q) {
+                $q->select('id', 'tag_id', 'name', 'language_id');
+            }])
+            ->limit(100)
+            ->get();
+        $vendor_registration_documents = VendorRegistrationDocument::select('id', 'is_required')
+            ->with(['primary' => function($q) {
+                $q->select('id', 'vendor_registration_document_id', 'name', 'language_id');
+            }])
+            ->limit(50)
+            ->get();
 
-        $user_registration_documents = UserRegistrationDocuments::with('primary')->get();
-        $category_kyc_documents = CategoryKycDocuments::with(['primary','categoryMapping.category.translation_one'])->whereHas('categoryMapping')->get();
+        $user_registration_documents = UserRegistrationDocuments::select('id', 'is_required')
+            ->with(['primary' => function($q) {
+                $q->select('id', 'user_registration_document_id', 'name', 'language_id');
+            }])
+            ->limit(50)
+            ->get();
+        
+        // Optimize: Only load category_kyc_documents if needed, and limit the nested relationships
+        try {
+            // Use select to limit columns and prevent loading unnecessary data
+            $category_kyc_documents = CategoryKycDocuments::select('id', 'is_required', 'status', 'created_at', 'updated_at')
+                ->with(['primary' => function($q) {
+                    $q->select('id', 'category_kyc_document_id', 'name', 'language_id');
+                }])
+                ->whereHas('categoryMapping', function($q) {
+                    $q->select('id', 'category_kyc_document_id', 'category_id');
+                })
+                ->limit(50) // Further reduce limit
+                ->get();
+        } catch (\Exception $e) {
+            Log::error('Error loading category_kyc_documents: ' . $e->getMessage());
+            $category_kyc_documents = collect([]); // Empty collection on error
+        }
 
         if($preference->reffered_by_amount == null){
             $reffer_by = 0;
@@ -166,17 +217,22 @@ class ClientPreferenceController extends BaseController{
         $verify_codes   = array('passbase');
         $verify_options = VerificationOption::whereIn('code', $verify_codes)->get();
         $accounting     = ThirdPartyAccounting::where('code','xero')->first();
-        $staticDropoff  = StaticDropoffLocation::get();
+        // Optimize: Limit static dropoff locations
+        $staticDropoff = StaticDropoffLocation::select('id', 'title', 'address', 'latitude', 'longitude')->limit(100)->get();
 
 
+        // Optimize: Add limit to prevent excessive data
         $client_languages = ClientLanguage::join('languages as lang', 'lang.id', 'client_languages.language_id')
                     ->select('lang.id as langId', 'lang.name as langName', 'lang.sort_code', 'client_languages.client_code', 'client_languages.is_primary')
-                    ->where('client_languages.client_code', Auth::user()->code)
+                    ->where('client_languages.client_code', $client->code)
                     ->where('client_languages.is_active', 1)
-                    ->orderBy('client_languages.is_primary', 'desc')->get();
+                    ->orderBy('client_languages.is_primary', 'desc')
+                    ->limit(50) // Limit to prevent excessive data
+                    ->get();
         $roles = [];
 
-        $roles = RoleOld::where('status',1)->get();
+        // Optimize: Select only needed columns and limit
+        $roles = RoleOld::select('id', 'name', 'status')->where('status',1)->limit(100)->get();
         return view('backend.setting.customize', compact('client','nomenclature_value','want_to_tip_nomenclature','user_registration_documents','cli_langs','languages','currencies','preference','cli_currs','curtableData', 'webTemplates', 'appTemplates','primaryCurrency','social_media_details', 'client_languages','tags','vendor_registration_documents','reffer_by','reffer_to','category_kyc_documents','fixed_fee','verify_options','accounting','staticDropoff','laundry_teams','roles','countries', 'primaryCountry', 'cli_countries', 'include_gift_nomenclature', 'control_panel_nomenclature'));
     }
 

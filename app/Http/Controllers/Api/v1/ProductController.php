@@ -80,12 +80,12 @@ class ProductController extends BaseController
 
         $clientCurrency = ClientCurrency::where('currency_id', Auth::user()->currency)->first();
         foreach ($products->variant as $key => $value) {
-            $products->variant[$key]->multiplier = $clientCurrency->doller_compare ?? 1;
+            $products->variant[$key]->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
         }
 
         foreach ($products->addOn as $key => $value) {
             foreach ($value->setoptions as $k => $v) {
-                $v->multiplier = $clientCurrency->doller_compare;
+                $v->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
             }
         }
         foreach ($products->variant as $key => $value) {
@@ -99,9 +99,10 @@ class ProductController extends BaseController
         }
 
         $response['products'] = $products;
-        $response['relatedProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'relate', $products->related);
-        $response['upSellProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'upSell', $products->upSell);
-        $response['crossProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'cross', $products->crossSell);
+        $dollerCompare = $clientCurrency ? $clientCurrency->doller_compare : 1;
+        $response['relatedProducts'] = $this->metaProduct($langId, $dollerCompare, 'relate', $products->related);
+        $response['upSellProducts'] = $this->metaProduct($langId, $dollerCompare, 'upSell', $products->upSell);
+        $response['crossProducts'] = $this->metaProduct($langId, $dollerCompare, 'cross', $products->crossSell);
         unset($products->related);
         unset($products->upSell);
         unset($products->crossSell);
@@ -261,7 +262,7 @@ class ProductController extends BaseController
             $product->is_wishlist = @$product->inwishlist ? 1 : 0;
             $clientCurrency = ClientCurrency::where('currency_id', $user->currency)->first();
             foreach ($product->variant as $key => $value) {
-                $product->variant[$key]->multiplier = $clientCurrency->doller_compare;
+                $product->variant[$key]->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                 $product->variant[$key]->price *= $product->variant[$key]->multiplier;
                 $product->variant[$key]->compare_at_price *= $product->variant[$key]->multiplier;
                 $product->variant[$key]->variant_title = $product->variant[$key]->optionData ?? '';
@@ -274,7 +275,7 @@ class ProductController extends BaseController
                     }else{
                         $v->is_free = false;
                     }
-                    $v->multiplier = $clientCurrency->doller_compare;
+                    $v->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                 }
             }
             $data_image = array();
@@ -542,9 +543,10 @@ class ProductController extends BaseController
             
             $response['products'] = $product;
             $response['frequently_bought'] = $frequentlyBoughtProducts;
-            $response['relatedProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'relate', $product->related, $request->service);
-            $response['upSellProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'upSell', $product->upSell, $request->service);
-            $response['crossProducts'] = $this->metaProduct($langId, $clientCurrency->doller_compare, 'cross', $product->crossSell, $request->service);
+            $dollerCompare = $clientCurrency ? $clientCurrency->doller_compare : 1;
+            $response['relatedProducts'] = $this->metaProduct($langId, $dollerCompare, 'relate', $product->related, $request->service);
+            $response['upSellProducts'] = $this->metaProduct($langId, $dollerCompare, 'upSell', $product->upSell, $request->service);
+            $response['crossProducts'] = $this->metaProduct($langId, $dollerCompare, 'cross', $product->crossSell, $request->service);
             $response['product_attribute'] = $product_attr;
             $response['additional_features'] = $additional;
             $response['productBookingsCount'] = $productBookingsCount;
@@ -767,8 +769,9 @@ class ProductController extends BaseController
             $variantData->product_media = $data_image;
 
             if ($variantData) {
-                $variantData->multiplier = $clientCurrency->doller_compare;
-                $variantData->productPrice = $variantData->price * $clientCurrency->doller_compare;
+                $dollerCompare = $clientCurrency ? $clientCurrency->doller_compare : 1;
+                $variantData->multiplier = $dollerCompare;
+                $variantData->productPrice = $variantData->price * $dollerCompare;
             }
             unset($variantData->media);
             unset($variantData->product->media);

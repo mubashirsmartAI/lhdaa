@@ -3,9 +3,9 @@
         <div class="front">
             <a href="{{route('vendorDetail')}}/{{ $vendor->slug }}">
                 @if($vendor->is_vendor_closed==1) 
-                    <img class="img-fluid blur-up lazyload m-auto bg-img grayscale-image" alt="xx" src="{{ get_file_path($vendor->logo,'FILL_URL','200','200') }}">
+                    <img class="img-fluid blur-up lazyload m-auto bg-img grayscale-image" alt="xx" src="{{ get_file_path(is_array($vendor->logo) ? ($vendor->logo['image_path'] ?? null) : $vendor->logo,'FILL_URL','200','200') }}" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}';">
                 @else
-                        <img class="img-fluid blur-up lazyload m-auto bg-img" alt="xx" src="{{ get_file_path($vendor->logo,'FILL_URL','200','200') }}">
+                        <img class="img-fluid blur-up lazyload m-auto bg-img" alt="xx" src="{{ get_file_path(is_array($vendor->logo) ? ($vendor->logo['image_path'] ?? null) : $vendor->logo,'FILL_URL','200','200') }}" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}';">
                 @endif
 
             </a>

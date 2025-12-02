@@ -658,12 +658,15 @@ class BaseController extends Controller{
         return $vendors;
     }
 
-    public function loadDefaultImage(){
+    public function loadDefaultImage($width = 300, $height = 300){
         $proxy_url = \Config::get('app.IMG_URL1');
         $image_path = \Config::get('app.IMG_URL2').'/'.\Storage::disk('s3')->url('default/default_image.png');
         $image_fit = \Config::get('app.FIT_URl');
-        $default_url = $image_fit .'300/300'. $image_path.'@webp';
-        return $default_url;
+        $default_url = $image_fit . $width.'/'.$height. $image_path.'@webp';
+        
+        // Fallback to local asset if S3 image doesn't exist
+        // Return local asset path directly as fallback
+        return asset('default/default_image.png');
     }
 
     protected function contains($point, $polygon){

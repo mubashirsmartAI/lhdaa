@@ -238,7 +238,7 @@ class VendorController extends BaseController{
                                 ->where('product_variant_sets.product_id', $p_id);
                             }])->where('id', $p_id)->first();
                             $value->variantSet = $variantData->variantSet;
-                            $value->product_image = ($value->media->isNotEmpty()) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : '';
+                            $value->product_image = ($value->media->isNotEmpty() && isset($value->media->first()->image)) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                             $value->translation_title = ($value->translation->isNotEmpty()) ? $value->translation->first()->title : $value->sku;
                             $value->translation_description = ($value->translation->isNotEmpty()) ? html_entity_decode(strip_tags($value->translation->first()->body_html),ENT_QUOTES) : '';
                             $value->translation_description = !empty($value->translation_description) ? mb_substr($value->translation_description, 0, 70) . '...' : '';
@@ -320,7 +320,7 @@ class VendorController extends BaseController{
                                 }else{
                                     $v->is_free = false;
                                 }
-                                $v->multiplier = $clientCurrency->doller_compare;
+                                $v->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                             }
                         }
 
@@ -339,7 +339,7 @@ class VendorController extends BaseController{
                         }])->where('id', $p_id)->first();
                         $product->variantSet = $variantData->variantSet;
                         // $product->is_wishlist = $product->category->categoryDetail->show_wishlist;
-                        $product->product_image = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+                        $product->product_image = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                         $product->translation_title = ($product->translation->isNotEmpty()) ? $product->translation->first()->title : $product->sku;
                         $product->translation_description = ($product->translation->isNotEmpty()) ? html_entity_decode(strip_tags($product->translation->first()->body_html),ENT_QUOTES) : '';
                         $product->translation_description = !empty($product->translation_description) ? mb_substr($product->translation_description, 0, 70) . '...' : '';
@@ -348,7 +348,7 @@ class VendorController extends BaseController{
                         $product->variant_id = ($product->variant->isNotEmpty()) ? $product->variant->first()->id : 0;
                         $product->variant_quantity = ($product->variant->isNotEmpty()) ? $product->variant->first()->quantity : 0;
                         foreach ($product->variant as $k => $v) {
-                            $product->variant[$k]->multiplier = $clientCurrency->doller_compare;
+                            $product->variant[$k]->multiplier = $clientCurrency ? $clientCurrency->doller_compare : 1;
                         }
                     }
                 }
@@ -647,7 +647,7 @@ class VendorController extends BaseController{
                                 ->where('product_variant_sets.product_id', $p_id);
                                 }])->where('id', $p_id)->first();
                                 $value->variantSet = $variantData->variantSet;
-                                $value->product_image = ($value->media->isNotEmpty()) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : '';
+                                $value->product_image = ($value->media->isNotEmpty() && isset($value->media->first()->image)) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                                 $value->translation_title = ($value->translation->isNotEmpty()) ? $value->translation->first()->title : $value->sku;
                                 $value->translation_description = ($value->translation->isNotEmpty()) ? html_entity_decode(strip_tags($value->translation->first()->body_html),ENT_QUOTES) : '';
                                 $value->translation_description = !empty($value->translation_description) ? mb_substr($value->translation_description, 0, 70) . '...' : '';
@@ -748,7 +748,7 @@ class VendorController extends BaseController{
 
                             $product->variantSet = $variantData->variantSet;
                             $product->is_wishlist = $product->category->categoryDetail->show_wishlist;
-                            $product->product_image = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+                            $product->product_image = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                             $product->translation_title = ($product->translation->isNotEmpty()) ? $product->translation->first()->title : $product->sku;
                             $product->translation_description = ($product->translation->isNotEmpty()) ? html_entity_decode(strip_tags($product->translation->first()->body_html),ENT_QUOTES) : '';
                             $product->translation_description = !empty($product->translation_description) ? mb_substr($product->translation_description, 0, 70) . '...' : '';
@@ -1042,7 +1042,7 @@ class VendorController extends BaseController{
                                 ->where('product_variant_sets.product_id', $p_id);
                                 }])->where('id', $p_id)->first();
                                 $value->variantSet = $variantData->variantSet;
-                                $value->product_image = ($value->media->isNotEmpty()) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : '';
+                                $value->product_image = ($value->media->isNotEmpty() && isset($value->media->first()->image)) ? $value->media->first()->image->path['image_fit'] . '300/300' . $value->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                                 $value->translation_title = ($value->translation->isNotEmpty()) ? $value->translation->first()->title : $value->sku;
                                 $value->translation_description = ($value->translation->isNotEmpty()) ? html_entity_decode(strip_tags($value->translation->first()->body_html),ENT_QUOTES) : '';
                                 $value->translation_description = !empty($value->translation_description) ? mb_substr($value->translation_description, 0, 70) . '...' : '';
@@ -1183,7 +1183,7 @@ class VendorController extends BaseController{
 
                             $product->variantSet = $variantData->variantSet;
                             $product->is_wishlist = $product->category->categoryDetail->show_wishlist;
-                            $product->product_image = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+                            $product->product_image = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                             $product->translation_title = ($product->translation->isNotEmpty()) ? $product->translation->first()->title : $product->sku;
                             $product->translation_description = ($product->translation->isNotEmpty()) ? html_entity_decode(strip_tags($product->translation->first()->body_html),ENT_QUOTES) : '';
                             $product->translation_description = !empty($product->translation_description) ? mb_substr($product->translation_description, 0, 70) . '...' : '';
@@ -2493,7 +2493,7 @@ class VendorController extends BaseController{
                         $p_id = $product->id;
 
 
-                        $product->product_image = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+                        $product->product_image = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                         $product->translation_title = ($product->translation->isNotEmpty()) ? $product->translation->first()->title : $product->sku;
                         $product->translation_description = ($product->translation->isNotEmpty()) ? html_entity_decode(strip_tags($product->translation->first()->body_html),ENT_QUOTES) : '';
                         $product->translation_description = !empty($product->translation_description) ? mb_substr($product->translation_description, 0, 70) . '...' : '';
@@ -2874,7 +2874,7 @@ class VendorController extends BaseController{
 
                             $product->variantSet = $variantData->variantSet;
                             $product->is_wishlist = $product->category->categoryDetail->show_wishlist;
-                            $product->product_image = ($product->media->isNotEmpty()) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : '';
+                            $product->product_image = ($product->media->isNotEmpty() && isset($product->media->first()->image)) ? $product->media->first()->image->path['image_fit'] . '300/300' . $product->media->first()->image->path['image_path'] : $this->loadDefaultImage();
                             $product->translation_title = ($product->translation->isNotEmpty()) ? $product->translation->first()->title : $product->sku;
                             $product->translation_description = ($product->translation->isNotEmpty()) ? html_entity_decode(strip_tags($product->translation->first()->body_html),ENT_QUOTES) : '';
                             $product->translation_description = !empty($product->translation_description) ? mb_substr($product->translation_description, 0, 70) . '...' : '';

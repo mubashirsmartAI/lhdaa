@@ -410,8 +410,8 @@ $preference = $client_preference_detail;
    	<div class="product-card-box position-relative ">
    		<a class="suppliers-box d-block" href="{{route('vendorDetail')}}/<%=vendor.slug %>">
    			<div class="suppliers-img-outer position-relative">
-   				<% if(vendor.is_vendor_closed==1){%> <img class="fluid-img mx-auto blur blurload grayscale-image" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="">
-   					<%}else{%> <img class="fluid-img mx-auto blur blurload" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="">
+   				<% if(vendor.is_vendor_closed==1){%> <img class="fluid-img mx-auto blur blurload grayscale-image" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');">
+   					<%}else{%> <img class="fluid-img mx-auto blur blurload" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');">
    						<%}%>
    							<% if(vendor.timeofLineOfSightDistance !=undefined){%>
    								<div class="pref-timing"> <span><%=vendor.timeofLineOfSightDistance %></span> </div>
@@ -466,7 +466,7 @@ $preference = $client_preference_detail;
    			<label for="fav_pro_one"><i class="fa fa-heart-o fav-heart" aria-hidden="true"></i></label>
    		</div>
    		<a class="common-product-box text-center" href="<%=product.vendor.slug %>/product/<%=product.url_slug %>">
-   			<div class="img-outer-box position-relative"> <img class="blur blurload" data-src="<%=product.image_url %>" alt="" title="">
+   			<div class="img-outer-box position-relative"> <img class="blur blurload" data-src="<%=product.image_url %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');">
    				<div class="pref-timing"> </div>
    			</div>
    			<div class="media-body align-self-center">
@@ -500,8 +500,8 @@ $preference = $client_preference_detail;
    	<div class="product-card-box position-relative">
    		<a class="suppliers-box d-block" href="{{route('vendorDetail')}}/<%=vendor.slug %>">
    			<div class="suppliers-img-outer position-relative">
-   				<% if(vendor.is_vendor_closed==1){%> <img class="fluid-img mx-auto blur blurload grayscale-image" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="">
-   					<%}else{%> <img class="fluid-img mx-auto blur blurload" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="">
+   				<% if(vendor.is_vendor_closed==1){%> <img class="fluid-img mx-auto blur blurload grayscale-image" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');">
+   					<%}else{%> <img class="fluid-img mx-auto blur blurload" data-src="<%=vendor.logo.image_fit %>200/200<%=vendor.logo['image_path'] %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');">
    						<%}%>
    							<% if(vendor.timeofLineOfSightDistance !=undefined){%>
    								<div class="pref-timing"> <span><%=vendor.timeofLineOfSightDistance %></span> </div>
@@ -567,7 +567,7 @@ $preference = $client_preference_detail;
    									<ul class="product_list d-flex align-items-center p-0 flex-wrap m-0">
    										<% _.each(vendor.products, function(product, k){%>
    											<% if(vendor.vendor_id==product.vendor_id){%>
-   												<li class="text-center"> <img class="blur blurload" data-src="<%=product.image_url %>" alt="" title=""> <span class="item_no position-absolute">x <%=product.quantity %></span>
+   												<li class="text-center"> <img class="blur blurload" data-src="<%=product.image_url %>" alt="" title="" onerror="this.onerror=null; this.src='{{ asset('default/default_image.png') }}'; this.setAttribute('data-src', '{{ asset('default/default_image.png') }}');"> <span class="item_no position-absolute">x <%=product.quantity %></span>
    													<label class="items_price">{{Session::get('currencySymbol')}}
    														<%= Helper.formatPrice(product.price * product.pricedoller_compare) %>
    													</label>

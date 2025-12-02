@@ -66,8 +66,8 @@ class AppAuth{
         $timezone = $user->timezone;
         $languages = ClientLanguage::where('is_primary', 1)->first();
         $primary_cur = ClientCurrency::where('is_primary', 1)->first();
-        $language_id = $languages->language_id;
-        $currency_id = $primary_cur->currency_id;
+        $language_id = $languages ? $languages->language_id : null;
+        $currency_id = $primary_cur ? $primary_cur->currency_id : null;
         if(isset($header['language'][0]) && !empty($header['language'][0])){
             $checkLang = ClientLanguage::where('language_id', $header['language'][0])->first();
             if($checkLang){
@@ -79,7 +79,8 @@ class AppAuth{
             if($checkCur){
                 $currency_id = $checkCur->currency_id;
             } else{
-                $currency_id = Currency::where('id',147)->first()->id;
+                $fallbackCurrency = Currency::where('id',147)->first();
+                $currency_id = $fallbackCurrency ? $fallbackCurrency->id : ($primary_cur ? $primary_cur->currency_id : null);
             }
         }
         if(isset($header['timezone'][0]) && !empty($header['timezone'][0])){

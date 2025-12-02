@@ -2256,7 +2256,14 @@ if( !function_exists('get_file_path') ) {
     function get_file_path($url,$type="FILL_URL",$height="260",$width="260")  {
 
         $img = 'default/default_image.png';
-      if(!empty($url)){
+      
+      // Handle array (from Vendor model's getLogoAttribute)
+      if(is_array($url) && isset($url['image_path'])){
+        // If image_path is empty or null, use default
+        if(!empty($url['image_path']) && $url['image_path'] != 'default/default_image.png'){
+          $img = $url['image_path'];
+        }
+      } elseif(!empty($url) && !is_array($url)){
         $img = $url;
       }
 

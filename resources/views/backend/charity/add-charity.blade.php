@@ -34,6 +34,38 @@
                         <h4 class="card-title">{{ __('Add Charity') }}</h4>
                     </div>
                     <div class="card-body">
+                        @if ($errors->any())
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <strong>{{ __('Error!') }}</strong>
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
+                        @if (session('error'))
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ session('error') }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
+                        @if (session('success'))
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                {{ session('success') }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        @endif
+
                         <form method="POST" action="{{ route('charity.store') }}" enctype="multipart/form-data">
 
                             @csrf
@@ -108,10 +140,10 @@
                                 <label class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control @error('phone') is-invalid @enderror" id="phone" 
                                     placeholder="Your phone number" 
-                                    value="{{ old('phone', $charity->phone ?? '') }}">
+                                    value="{{ old('phone', isset($charity) ? $charity->phone : '') }}">
                                 
                                 <input type="hidden" name="dial_code" id="dial_code" value="{{ old('dial_code') }}">
-                                <input type="hidden" name="phone" id="phone_number" value="{{ old('phone_number') }}">
+                                <input type="hidden" name="phone" id="phone_hidden" value="{{ old('phone') }}">
 
                                 @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -175,7 +207,7 @@
         $(document).ready(function () {
             const input = document.querySelector("#phone");
             const dialCodeInput = document.querySelector("#dial_code");
-            const phoneNumberInput = document.querySelector("#phone_number");
+            const phoneHiddenInput = document.querySelector("#phone_hidden");
 
             const iti = window.intlTelInput(input, {
                 initialCountry: "bh",
@@ -184,11 +216,22 @@
             });
 
             $("form").on("submit", function (event) {
-                const dialCode = iti.getSelectedCountryData().dialCode;
-                const phoneNumber = input.value.trim();
+                // Validate phone number
+                if (!iti.isValidNumber()) {
+                    event.preventDefault();
+                    alert('Please enter a valid phone number.');
+                    return false;
+                }
 
+                // Get dial code and phone number
+                const dialCode = iti.getSelectedCountryData().dialCode;
+                // Get the national number (digits only, without country code)
+                const fullNumber = iti.getNumber();
+                const phoneNumber = fullNumber.replace('+' + dialCode, '').replace(/\D/g, '');
+                
+                // Set hidden fields
                 dialCodeInput.value = `+${dialCode}`;
-                phoneNumberInput.value = phoneNumber;
+                phoneHiddenInput.value = phoneNumber;
             });
         });
     </script>
