@@ -2,8 +2,9 @@
 @php
 $clientData = \App\Models\Client::select('id', 'logo')->where('id', '>', 0)->first();
 $urlImg = $clientData->logo['image_fit'].'150/60'.$clientData->logo['image_path'];
-$sign_image = (!empty(Session::get('preferences')) ? Session::get('preferences')->signup_image:'');
-$sign_image_url = $sign_image['image_fit'].'1920/1080'.$sign_image['image_path'];
+$preferences = Session::get('preferences');
+$sign_image = (!empty($preferences) && is_array($preferences) && isset($preferences['signup_image'])) ? $preferences['signup_image'] : '';
+$sign_image_url = @$sign_image['image_fit'].'1920/1080'.@$sign_image['image_path'];
 @endphp
 @section('css-links')
 <link rel="stylesheet" href="{{ asset('assets/css/intlTelInput.css') }}">

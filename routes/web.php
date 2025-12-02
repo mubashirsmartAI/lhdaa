@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 
@@ -63,4 +64,7 @@ Route::get('/manifest', function () {
 
     return response()->json(config('manifest'));
 });
+
+// Temporary route to set primary currency - REMOVE AFTER USE
+Route::get('/setup-primary-currency', [App\Http\Controllers\SetupController::class, 'setPrimaryCurrency']);
 

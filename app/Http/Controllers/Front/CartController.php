@@ -315,6 +315,12 @@ class CartController extends FrontController
             $langId = Session::get('customerLanguage') ?? '1';
             $new_session_token = session()->get('_token');
             $client_currency = ClientCurrency::where('is_primary', '=', 1)->first();
+            
+            // Check if currency exists
+            if (!$client_currency) {
+                return response()->json(['status' => 'error', 'message' => 'Currency not configured. Please contact administrator.']);
+            }
+            
             $user_id = $user ? $user->id : '';
             $variant_id = $request->variant_id;
             $client_timezone = DB::table('clients')->first('timezone');
@@ -629,6 +635,12 @@ class CartController extends FrontController
         $cartInfo = ' ';
         $user = Auth::user();
         $currency = ClientCurrency::where('is_primary', '=', 1)->first();
+        
+        // Check if currency exists
+        if (!$currency || !$currency->currency) {
+            return response()->json(['status' => 'error', 'message' => 'Currency not configured. Please contact administrator.']);
+        }
+        
         if ($user) {
             $user_id = $user->id;
             $userFind = Cart::where('user_id', $user_id)->first();
@@ -663,6 +675,7 @@ class CartController extends FrontController
                 $cart->currency_id = $currency->currency->id;
                 $cart->unique_identifier = session()->get('_token');
                 $cart->save();
+                $cart_detail = $cart;
             }
             $productForVendor = Product::where('id', $request->product_id)->first();
             $cartProduct = new CartProduct;
@@ -704,6 +717,12 @@ class CartController extends FrontController
             $user = Auth::user();
             $new_session_token = session()->get('_token');
             $client_currency = ClientCurrency::where('is_primary', '=', 1)->first();
+            
+            // Check if currency exists
+            if (!$client_currency) {
+                return response()->json(['status' => 'error', 'message' => 'Currency not configured. Please contact administrator.']);
+            }
+            
             $user_id = $user ? $user->id : '';
             if ($user) {
                 $cart_detail['user_id'] = $user_id;

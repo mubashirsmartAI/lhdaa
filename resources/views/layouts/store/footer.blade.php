@@ -393,9 +393,15 @@ if($showSubscriptionPlanPopUp == 1){
     var khalti_api_key = "{{getKhaltiPayApiKey()??''}}";
 
 // Client Perference  Detail
-    var client_preference_web_color = "{{Session::get('preferences') ? Session::get('preferences')->web_color ?? '' : ''}}";
-    var client_preference_web_rgb_color = "{{Session::get('preferences') ? Session::get('preferences')->wb_color_rgb ?? '' : ''}}";
-    var stop_accepting_orders = "{{Session::get('preferences') ? Session::get('preferences')->stop_order_acceptance_for_users ?? 0 : 0}}";
+    @php
+        $preferences = Session::get('preferences');
+        $web_color = (is_array($preferences) && isset($preferences['web_color'])) ? $preferences['web_color'] : '';
+        $wb_color_rgb = (is_array($preferences) && isset($preferences['wb_color_rgb'])) ? $preferences['wb_color_rgb'] : '';
+        $stop_orders = (is_array($preferences) && isset($preferences['stop_order_acceptance_for_users'])) ? $preferences['stop_order_acceptance_for_users'] : 0;
+    @endphp
+    var client_preference_web_color = "{{ $web_color }}";
+    var client_preference_web_rgb_color = "{{ $wb_color_rgb }}";
+    var stop_accepting_orders = "{{ $stop_orders }}";
 
 // Client Detail
     var client_company_name = "{{Session::get('clientdata') ? Session::get('clientdata')->company_name ?? '' : ''}}";

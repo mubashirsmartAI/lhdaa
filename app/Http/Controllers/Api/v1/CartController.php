@@ -2397,22 +2397,26 @@ class CartController extends BaseController
 
                 //Borzoe Delivery changes code
                 $borzoe_deliver_fee = $this->borzoeDelivery($vendorData->vendor_id);
-                $deliverFee = json_decode($borzoe_deliver_fee);
-                $borzoe_deliver_fee = $deliverFee->order->payment_amount;
-                if ($borzoe_deliver_fee > 0) {
-                    $borzoe_deliver_fee = decimal_format($borzoe_deliver_fee);
-                    $optionBorzoeApi[] = array(
-                        'type' => 'B',
-                        'courier_name' => __('Borzoe'),
-                        'rate' => $borzoe_deliver_fee,
-                        'courier_company_id' => 0,
-                        'etd' => 0,
-                        'etd_hours' => 0,
-                        'duration' => 0,
-                        'estimated_delivery_days' => 0,
-                        'code' => 'B_0'
-                    );
-                    $option = array_merge($option, $optionBorzoeApi);
+                if (!empty($borzoe_deliver_fee) && is_string($borzoe_deliver_fee)) {
+                    $deliverFee = json_decode($borzoe_deliver_fee);
+                    if ($deliverFee && isset($deliverFee->order) && isset($deliverFee->order->payment_amount)) {
+                        $borzoe_deliver_fee = $deliverFee->order->payment_amount;
+                        if ($borzoe_deliver_fee > 0) {
+                            $borzoe_deliver_fee = decimal_format($borzoe_deliver_fee);
+                            $optionBorzoeApi[] = array(
+                                'type' => 'B',
+                                'courier_name' => __('Borzoe'),
+                                'rate' => $borzoe_deliver_fee,
+                                'courier_company_id' => 0,
+                                'etd' => 0,
+                                'etd_hours' => 0,
+                                'duration' => 0,
+                                'estimated_delivery_days' => 0,
+                                'code' => 'B_0'
+                            );
+                            $option = array_merge($option, $optionBorzoeApi);
+                        }
+                    }
                 }
                 //End Borzoe Delivery changes code
 
